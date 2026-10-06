@@ -3,13 +3,16 @@
 Pseudo-code: guides/pseudocode/01_agent.md
 Kiểm tra:    pytest tests/test_02_agent.py
 """
+import os
+import shutil
+import sys
 from pathlib import Path
 
-# TODO 1: import các thành phần cần dùng, ví dụ:
-#   from deepagents import create_deep_agent
-#   from deepagents.backends import LocalShellBackend
-#   from .model import make_model
-#   from .subagents import get_subagents
+from deepagents import create_deep_agent
+from deepagents.backends import LocalShellBackend
+
+from .model import make_model
+from .subagents import get_subagents
 
 # ---- CÓ SẴN, KHÔNG SỬA: system prompt dùng chung cho mọi sinh viên (để đường cơ sở so sánh được) ----
 PATHS_NOTE = (
@@ -38,6 +41,68 @@ SUBAGENTS_NOTE = (
 # --------------------------------------------------------------------------------------------------
 
 
+import subprocess
+from deepagents.backends.protocol import ExecuteResponse
+
+
+class ShShellBackend(LocalShellBackend):
+    """LocalShellBackend that pipes commands to sh on Windows when a POSIX shell is available."""
+
+    def execute(self, command: str, *, timeout: int | None = None) -> ExecuteResponse:
+        sh_path = shutil.which("sh") or shutil.which("bash")
+        if sys.platform == "win32" and sh_path:
+            effective_timeout = timeout if timeout is not None else self._default_timeout
+            try:
+                proc = subprocess.Popen(
+                    [sh_path, "-c", command],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    stdin=subprocess.DEVNULL,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    cwd=str(self.cwd),
+                    env=self._env,
+                )
+                try:
+                    stdout, stderr = proc.communicate(timeout=effective_timeout)
+                except subprocess.TimeoutExpired:
+                    subprocess.run(
+                        ["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                        capture_output=True,
+                        check=False,
+                    )
+                    try:
+                        stdout, stderr = proc.communicate(timeout=5)
+                    except Exception:
+                        pass
+                    msg = f"Error: Command timed out after {effective_timeout} seconds."
+                    return ExecuteResponse(output=msg, exit_code=124, truncated=False)
+
+                output_parts = []
+                if stdout:
+                    output_parts.append(stdout)
+                if stderr:
+                    for line in stderr.strip().split("\n"):
+                        if line:
+                            output_parts.append(f"[stderr] {line}")
+                output = "\n".join(output_parts) if output_parts else "<no output>"
+                truncated = False
+                if len(output) > self._max_output_bytes:
+                    output = output[: self._max_output_bytes] + f"\n\n... Output truncated at {self._max_output_bytes} bytes."
+                    truncated = True
+                if proc.returncode != 0:
+                    output = f"{output.rstrip()}\n\nExit code: {proc.returncode}"
+                return ExecuteResponse(
+                    output=output,
+                    exit_code=proc.returncode,
+                    truncated=truncated,
+                )
+            except Exception as e:
+                return ExecuteResponse(output=f"Error executing command ({type(e).__name__}): {e}", exit_code=1, truncated=False)
+        return super().execute(command, timeout=timeout)
+
+
 def make_backend(sandbox: Path):
     """Tạo backend (môi trường thực thi) cho tác tử.
 
@@ -47,7 +112,37 @@ def make_backend(sandbox: Path):
       - Tác tử chạy được lệnh shell và gọi được `python` (cần đặt PATH).
       - KHÔNG chuyển biến môi trường của bạn vào shell của tác tử (khóa API không được lộ).
     """
-    raise NotImplementedError("TODO 2: cài đặt make_backend (xem guides/pseudocode/01_agent.md)")
+    python_dir = str(Path(sys.executable).parent)
+    path_parts = [python_dir]
+    git_path = shutil.which("git")
+    if git_path:
+        git_usr_bin = Path(git_path).resolve().parent.parent / "usr" / "bin"
+        if git_usr_bin.exists():
+            path_parts.append(str(git_usr_bin))
+    if sys.platform == "win32":
+        path_parts.append(r"C:\Windows\System32")
+    path_parts.extend(["/usr/local/bin", "/usr/bin", "/bin"])
+    path_str = os.pathsep.join(path_parts) if sys.platform == "win32" else ":".join([python_dir, "/usr/local/bin", "/usr/bin", "/bin"])
+    if sys.platform == "win32":
+        path_str = path_str + ":/usr/local/bin:/usr/bin:/bin"
+
+    env = {
+        "PATH": path_str,
+        "HOME": str(sandbox),
+        "PYTHONDONTWRITEBYTECODE": "1",
+    }
+    if sys.platform == "win32":
+        for var in ("SystemRoot", "COMSPEC", "PATHEXT", "TEMP", "TMP"):
+            if var in os.environ:
+                env[var] = os.environ[var]
+
+    return ShShellBackend(
+        root_dir=sandbox,
+        virtual_mode=True,
+        inherit_env=False,
+        env=env,
+        timeout=120,
+    )
 
 
 def build_agent(sandbox: Path, mode: str = "single", use_skills: bool = False, model=None):
@@ -64,4 +159,30 @@ def build_agent(sandbox: Path, mode: str = "single", use_skills: bool = False, m
     mode không hợp lệ -> ném ValueError.
     Trả về: đồ thị (graph) đã biên dịch, gọi bằng `.invoke({"messages": [...]})`.
     """
-    raise NotImplementedError("TODO 3: cài đặt build_agent (xem guides/pseudocode/01_agent.md)")
+    if mode not in {"single", "subagents"}:
+        raise ValueError(f"Unknown mode: {mode}")
+
+    kwargs = {}
+    prompt = BASE_PROMPT
+
+    if mode == "subagents":
+        kwargs["subagents"] = [
+            {**sub, "system_prompt": sub["system_prompt"] + " " + PATHS_NOTE}
+            for sub in get_subagents()
+        ]
+        prompt = prompt + SUBAGENTS_NOTE
+
+    if use_skills:
+        kwargs["skills"] = ["/skills/"]
+        prompt = prompt + SKILLS_NOTE
+
+    resolved_model = model if model is not None else make_model()
+    if hasattr(resolved_model, "streaming"):
+        resolved_model.streaming = True
+
+    return create_deep_agent(
+        model=resolved_model,
+        system_prompt=prompt,
+        backend=make_backend(sandbox),
+        **kwargs,
+    )

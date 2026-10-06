@@ -1,0 +1,74 @@
+{
+  "task": "code-learn",
+  "condition": "skills-auto",
+  "role": "learn",
+  "error": null,
+  "timestamp": "2026-10-06T19:29:26.244091+00:00",
+  "skills_sha256": "a44ff3273674a6e77b204ad5707d256efa719f4d1afc20f14383ef4e18f4c601",
+  "seconds": 182.6,
+  "tokens": {
+    "input": 190564,
+    "output": 9181,
+    "total": 199745
+  },
+  "tool_calls": 36,
+  "subagent_calls": 0,
+  "skills_read": 3,
+  "skills_modified": false,
+  "final_message": "All done. Here's a summary of the work.\n\n## Summary\n\nThe `inventory` package had four bugs where the source didn't match its docstrings. I fixed each in `workspace/inventory/`:\n\n**`pricing.py`**\n- `parse_price`: now strips thousands separators (`,`) and handles accounting-style parentheses (`\"(12.00)\"` → `Decimal(\"-12.00\")`), in addition to the existing `$`/whitespace handling.\n- `apply_discount`: now uses `ROUND_HALF_UP` (was default `ROUND_HALF_EVEN`, giving `9.04` instead of `9.05`), and converts `percent` via `Decimal(str(...))` to avoid binary float artifacts.\n\n**`report.py`**\n- `low_stock`: changed the comparison from `<=` to `<` (docstring says *strictly below* threshold) and now sorts names case-insensitively with `key=str.lower`.\n\n**`export.py`**\n- `to_csv_row`: now applies RFC 4180 quoting — wraps names containing a comma or double quote in quotes and doubles inner quotes. Also quantizes the price with `ROUND_HALF_UP` for consistent 2-decimal output.\n\n**House rules**\n- Added `workspace/tests/test_regressions.py` with one test per fixed bug (7 tests); did not touch `tests/test_report.py`.\n- Updated `workspace/CHANGELOG.md` under `## Unreleased` with one `- fix(<function>): ...` bullet per fix.\n- Added type hints to all public functions.\n\nResult: `13 passed` (6 original + 7 regression tests).",
+  "score": 1.0,
+  "passed": 10,
+  "total": 10,
+  "checks": [
+    {
+      "name": "visible_suite_passes",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tests_not_modified",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "parse_price_all_formats",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "other_caller_fixed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "discount_rounds_half_up",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "low_stock_follows_docstring",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "csv_quoting_follows_docstring",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "rule_type_hints",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "rule_regression_tests",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "rule_changelog",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}

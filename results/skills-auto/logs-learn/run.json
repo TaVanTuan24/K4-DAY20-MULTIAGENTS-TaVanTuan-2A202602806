@@ -1,0 +1,69 @@
+{
+  "task": "logs-learn",
+  "condition": "skills-auto",
+  "role": "learn",
+  "error": "GraphRecursionError: Recursion limit of 60 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT",
+  "timestamp": "2026-10-06T19:50:52.968250+00:00",
+  "skills_sha256": "a44ff3273674a6e77b204ad5707d256efa719f4d1afc20f14383ef4e18f4c601",
+  "seconds": 234.9,
+  "tokens": {
+    "input": 367920,
+    "output": 10893,
+    "total": 378813
+  },
+  "tool_calls": 51,
+  "subagent_calls": 0,
+  "skills_read": 3,
+  "skills_modified": false,
+  "final_message": "'./skills/deliverable-artifact-verification/SKILL.md' 1064\n'./skills/preserve-tests-and-house-rules/SKILL.md' 909\n'./skills/implement-to-docstring-edge-cases/SKILL.md' 1020\n'./workspace/_readme_dump.txt' 568\n'./workspace/README.md' 528\n'./workspace/app.log' 8516\n\n[Command succeeded with exit code 0]",
+  "score": 0.0,
+  "passed": 0,
+  "total": 9,
+  "checks": [
+    {
+      "name": "valid_structure",
+      "passed": false,
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: '/tmp/lab_sandbox_2fnr4mmi/workspace/errors.json'"
+    },
+    {
+      "name": "entry_count",
+      "passed": false,
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: '/tmp/lab_sandbox_2fnr4mmi/workspace/errors.json'"
+    },
+    {
+      "name": "timestamps_utc",
+      "passed": false,
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: '/tmp/lab_sandbox_2fnr4mmi/workspace/errors.json'"
+    },
+    {
+      "name": "exception_fields",
+      "passed": false,
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: '/tmp/lab_sandbox_2fnr4mmi/workspace/errors.json'"
+    },
+    {
+      "name": "repeat_counts",
+      "passed": false,
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: '/tmp/lab_sandbox_2fnr4mmi/workspace/errors.json'"
+    },
+    {
+      "name": "counts_by_service",
+      "passed": false,
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: '/tmp/lab_sandbox_2fnr4mmi/workspace/errors.json'"
+    },
+    {
+      "name": "rule_service_names",
+      "passed": false,
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: '/tmp/lab_sandbox_2fnr4mmi/workspace/errors.json'"
+    },
+    {
+      "name": "rule_sorted_errors",
+      "passed": false,
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: '/tmp/lab_sandbox_2fnr4mmi/workspace/errors.json'"
+    },
+    {
+      "name": "rule_schema_header",
+      "passed": false,
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: '/tmp/lab_sandbox_2fnr4mmi/workspace/errors.json'"
+    }
+  ]
+}

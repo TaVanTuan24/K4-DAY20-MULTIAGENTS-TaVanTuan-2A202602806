@@ -46,8 +46,8 @@ Bảng phân loại các check thất bại trên các tác vụ học của đi
 | data-learn | `top_region` | G | "FileNotFoundError: .../workspace/answer.json" (chưa hoàn thành do GraphRecursionError cạn 60 bước / thiếu artifact) |
 | data-learn | `missing_amount_orders` | G | "FileNotFoundError: .../workspace/answer.json" (chưa hoàn thành do GraphRecursionError cạn 60 bước / thiếu artifact) |
 | data-learn | `duplicate_rows_removed` | G | "FileNotFoundError: .../workspace/answer.json" (chưa hoàn thành do GraphRecursionError cạn 60 bước / thiếu artifact) |
-| data-learn | `rule_money_in_cents` | E | "FileNotFoundError: .../workspace/answer.json" (quy ước tổ chức; tệp chưa kịp tạo do GraphRecursionError) |
-| data-learn | `rule_meta_block` | E | "FileNotFoundError: .../workspace/answer.json" (quy ước tổ chức; tệp chưa kịp tạo do GraphRecursionError) |
+| data-learn | `rule_money_in_cents` | G | "FileNotFoundError: .../workspace/answer.json" (chưa thể xác định lỗi quy ước vì artifact không được tạo sau GraphRecursionError) |
+| data-learn | `rule_meta_block` | G | "FileNotFoundError: .../workspace/answer.json" (chưa thể xác định lỗi quy ước vì artifact không được tạo sau GraphRecursionError) |
 | data-learn | `rule_clean_csv` | E | "RULE: write workspace/clean.csv with the header order_id,timestamp_utc,region,amount_cents..." |
 | logs-learn | `valid_structure` | G | "FileNotFoundError: .../workspace/errors.json" (chưa hoàn thành do GraphRecursionError cạn 60 bước / thiếu artifact) |
 | logs-learn | `entry_count` | G | "FileNotFoundError: .../workspace/errors.json" (chưa hoàn thành do GraphRecursionError cạn 60 bước / thiếu artifact) |
@@ -55,17 +55,17 @@ Bảng phân loại các check thất bại trên các tác vụ học của đi
 | logs-learn | `exception_fields` | G | "FileNotFoundError: .../workspace/errors.json" (chưa hoàn thành do GraphRecursionError cạn 60 bước / thiếu artifact) |
 | logs-learn | `repeat_counts` | G | "FileNotFoundError: .../workspace/errors.json" (chưa hoàn thành do GraphRecursionError cạn 60 bước / thiếu artifact) |
 | logs-learn | `counts_by_service` | G | "FileNotFoundError: .../workspace/errors.json" (chưa hoàn thành do GraphRecursionError cạn 60 bước / thiếu artifact) |
-| logs-learn | `rule_service_names` | E | "FileNotFoundError: .../workspace/errors.json" (quy ước tổ chức; tệp chưa kịp tạo do GraphRecursionError) |
-| logs-learn | `rule_sorted_errors` | E | "FileNotFoundError: .../workspace/errors.json" (quy ước tổ chức; tệp chưa kịp tạo do GraphRecursionError) |
-| logs-learn | `rule_schema_header` | E | "FileNotFoundError: .../workspace/errors.json" (quy ước tổ chức; tệp chưa kịp tạo do GraphRecursionError) |
+| logs-learn | `rule_service_names` | G | "FileNotFoundError: .../workspace/errors.json" (chưa thể xác định lỗi quy ước vì artifact không được tạo sau GraphRecursionError) |
+| logs-learn | `rule_sorted_errors` | G | "FileNotFoundError: .../workspace/errors.json" (chưa thể xác định lỗi quy ước vì artifact không được tạo sau GraphRecursionError) |
+| logs-learn | `rule_schema_header` | G | "FileNotFoundError: .../workspace/errors.json" (chưa thể xác định lỗi quy ước vì artifact không được tạo sau GraphRecursionError) |
 
 Nhận xét:
 - Phân bố nhóm lỗi: Trong 27 check thất bại của baseline trên 3 tác vụ học:
-  + Nhóm E (Vi phạm quy ước tổ chức: toàn bộ các check có tiền tố `rule_` và yêu cầu định dạng `RULE:`): chiếm 9/27 check (3 check ở `code-learn`, 3 check ở `data-learn`, 3 check ở `logs-learn`).
-  + Nhóm G (Lỗi hạ tầng / chưa hoàn thành do `GraphRecursionError` cạn giới hạn 60 bước khiến tệp artifact không kịp ghi ra đĩa): chiếm 11/27 check (5 check ở `data-learn`, 6 check ở `logs-learn`). Theo đúng hướng dẫn và rubric, lỗi hạ tầng không được suy diễn tùy tiện thành lỗi nhận thức của tác tử khi vết trace chưa lưu lại được bằng chứng.
-  + Nhóm kỹ thuật (A, B, C, D trên `code-learn`): chiếm 7/27 check (A: 2 check, B: 1 check, C: 1 check, D: 3 check).
+  + Nhóm G (Khác / chưa hoàn thành do `GraphRecursionError` cạn giới hạn 60 bước khiến tệp artifact không kịp ghi ra đĩa): chiếm đa số với **16/27 check** (7 check ở `data-learn`, 9 check ở `logs-learn`). Trong đó, bao gồm 5 check `rule_*` có detail là `FileNotFoundError` thay vì `RULE:`, do tác tử cạn bước trước khi tạo artifact nên không đủ bằng chứng để phân loại thành vi phạm quy ước tổ chức. Theo đúng hướng dẫn và rubric, lỗi hạ tầng không được suy diễn tùy tiện thành lỗi nhận thức của tác tử khi vết trace chưa lưu lại được bằng chứng.
+  + Nhóm E (Vi phạm quy ước tổ chức theo tiêu chuẩn GUIDE: tên bắt đầu bằng `rule_` VÀ `detail` bắt đầu bằng `RULE:`): chiếm **4/27 check** (3 check ở `code-learn`: `rule_type_hints`, `rule_regression_tests`, `rule_changelog`; và 1 check ở `data-learn`: `rule_clean_csv`).
+  + Nhóm kỹ thuật (A, B, C, D trên `code-learn`): chiếm **7/27 check** (A: 2 check, B: 1 check, C: 1 check, D: 3 check).
 - Khả năng phòng ngừa của Skill:
-  + Kỹ năng (skills) do curator sinh ra (như `preserve-tests-and-house-rules` và `deliverable-artifact-verification`) có khả năng phòng ngừa đặc biệt hiệu quả đối với **nhóm E** (quy ước tổ chức) và một phần nhóm D/B bằng cách cung cấp danh sách kiểm tra (checklist) hành động rõ ràng và yêu cầu tạo đúng các tệp quy ước (`tests/test_regressions.py`, `CHANGELOG.md`, type hints) trước khi kết thúc tác vụ (minh chứng qua việc `skills-auto` sau đó đạt tuyệt đối 10/10 trên `code-learn`).
+  + Kỹ năng (skills) do curator sinh ra (như `preserve-tests-and-house-rules` và `deliverable-artifact-verification`) có khả năng phòng ngừa đặc biệt hiệu quả đối với **nhóm E** (quy ước tổ chức có checklist rõ ràng) và một phần nhóm D/B bằng cách cung cấp danh sách kiểm tra hành động và yêu cầu tạo đúng các tệp quy ước (`tests/test_regressions.py`, `CHANGELOG.md`, type hints) trước khi kết thúc tác vụ (minh chứng qua việc `skills-auto` sau đó đạt tuyệt đối 10/10 trên `code-learn`).
   + Tuy nhiên, kỹ năng không thể giải quyết triệt để **nhóm G** do giới hạn bước thực thi (`recursion_limit = 60`) là rào cản hạ tầng; khi dữ liệu đầu vào lớn, việc đọc thêm skill thậm chí có thể làm tăng số bước suy luận trung gian.
 
 ## 5. Điều kiện `subagents` (Phần 2.3)
@@ -87,7 +87,7 @@ Nhận xét:
 
 ## 6. Self-evolving: skill do curator sinh (Phần 3)
 
-- Số lần chạy curator, số skill bị xóa và lý do: 1 lần chính thức (sau khi baseline learning runs hoàn tất không rò rỉ). Số skill bị xóa: 0 skill (tất cả 3 skill sinh ra đều vượt qua bộ kiểm tra `validate_skill`).
+- Số lần chạy curator, số skill bị xóa và lý do: 1 lần chính thức (sau khi baseline learning runs hoàn tất và không phát hiện evaluation marker trong các artifacts được lưu). Số skill bị xóa: 0 skill (tất cả 3 skill sinh ra đều vượt qua bộ kiểm tra `validate_skill`).
 - Đầu vào của curator: Do các vết học của baseline trước freeze bị rỗng sau khi gặp `GraphRecursionError`, việc sinh kỹ năng của curator trong thí nghiệm này được định hướng chủ yếu bởi tên các check thất bại (`name`) và chi tiết phản hồi (`detail`) từ các baseline learn run, chứ không dựa vào các vết thực thi (execution traces) phong phú.
 
 | Skill | Tổng quát hay riêng cho tác vụ học? | Đúng hay sai (nêu chỗ sai nếu có) | Độ dài, `description` và `skills_read` ở Phần 3.4 |
@@ -189,8 +189,8 @@ Thí nghiệm cung cấp bằng chứng cho thấy cơ chế tự sinh kỹ năn
 - Lệnh đã chạy (theo thứ tự):
   1. `pytest` kiểm tra 32 unit test ban đầu.
   2. `python scripts/tour.py` phân tích công cụ và hướng dẫn hành vi.
-  3. `python -m lab.runner --condition baseline --tasks learn` (học đường cơ sở, kiểm tra Leakage Gate: sạch 100%).
-  4. `python -m lab.runner --condition subagents --tasks learn` (học đa tác tử, kiểm tra Leakage Gate: sạch 100%).
+  3. `python -m lab.runner --condition baseline --tasks learn` (học đường cơ sở; không phát hiện evaluation marker trong artifacts được lưu; lưu ý một số trace rỗng).
+  4. `python -m lab.runner --condition subagents --tasks learn` (học đa tác tử; không phát hiện evaluation marker trong artifacts được lưu; lưu ý một số trace rỗng).
   5. `python -m lab.curator` (tổng hợp 3 skills tự động vào `skills/auto/`).
   6. `python -m lab.runner --condition skills-auto --tasks learn` (chạy thử kỹ năng trước freeze, sao lưu sang `results/skills-auto-dev`).
   7. Commit giả thuyết `hypotheses` và tạo tag `freeze`.
